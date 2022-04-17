@@ -10,7 +10,7 @@ class Front(models.Model):
     link = models.URLField()
     text = models.TextField(null=True)
     details = models.CharField(max_length=200,default=0)
-    #likes = models.IntegerField(default=0)
+
     
     def __str__(self):
         return self.author

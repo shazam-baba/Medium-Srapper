@@ -62,7 +62,7 @@ def new_search(request):
 
             crawling(title,author,img,official_link,official_link)   #crawling function
             count += 1
-            if count >= 2:
+            if count > 4:
                 break
         driver.close()
         return redirect('results')
