@@ -37,35 +37,41 @@ def new_search(request):
         print("Record doesn't exists")
 
     if request.method == 'POST':
-        search = request.POST.get('search')
+        search = request.POST.get('search').lower()
         final_url = url.format(quote_plus(search))
+        print(final_url)
         driver = webdriver.Chrome('C:/Users/sharm/Desktop/django/medium/scrap/chromedriver.exe')
         driver.get(final_url)
-        time.sleep(1)
-        html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        all_divs = soup.find('div', {'class': 'l'})
-        job_profiles = all_divs.find_all('article')
+        response = requests.get(final_url)
+        print(response.status_code)
+        if response.status_code == 404:
+            err = search
+            return render(request, 'scrap/error.html', {'err': err})
+        else:
+            html = driver.page_source
+            soup = BeautifulSoup(html, "html.parser")
+            all_divs = soup.find('div', {'class': 'l'})
+            job_profiles = all_divs.find_all('article')
 
-        count = 0
-        for job_profile in job_profiles:
-            title = job_profile.h2.text
-            author = job_profile.p.text
-            img = job_profile.find('img', {'class': ''})
-            if img is None:
-                img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
-                print('no image')
-            else:
-                img = img['src']
-            link = job_profile.find('div', {'class': 'l fs'})
-            official_link =  'https://medium.com' + link.find('a',class_='')['href']
-
-            crawling(title,author,img,official_link,official_link)   #crawling function
-            count += 1
-            if count > 4:
-                break
-        driver.close()
-        return redirect('results')
+            count = 0
+            for job_profile in job_profiles:
+                title = job_profile.h2.text
+                author = job_profile.p.text
+                img = job_profile.find('img', {'class': ''})
+                if img is None:
+                    img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png'
+                    print('no image')
+                else:
+                    img = img['src']
+                link = job_profile.find('div', {'class': 'l fs'})
+                official_link =  'https://medium.com' + link.find('a',class_='')['href']
+                print('going to crawl')
+                print(title)
+                crawling(title,author,img,official_link,official_link)   #crawling function
+                count += 1
+                if count == 3:
+                    break
+            return redirect('results')
     return render(request, 'scrap/new_search.html')
 
 
